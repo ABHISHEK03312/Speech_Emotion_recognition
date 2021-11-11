@@ -130,5 +130,7 @@ dmypy.json
 
 
 # result files
+audio_files
+audio_files/
 siamese_train_preds.csv
 Speaker_Classification_data/train_data.csv
