@@ -52,7 +52,7 @@ def get_audio_features(x, sr, nonMuteSections):
     audio_slices = []
     for i in range(nonMuteSections.shape[0]):
         current_slice_len = nonMuteSections[i][1]-nonMuteSections[i][0]
-        ideal_len = 3*sr  # 3 second ideal clip len
+        ideal_len = int(3.7*sr)  # 3.7 second ideal clip len
         # finding maximum possible delta to add to both sides to make a clip have as close to 3s length as possible
         if ideal_len>current_slice_len:
             delta = int((ideal_len-current_slice_len)/2)
@@ -60,6 +60,10 @@ def get_audio_features(x, sr, nonMuteSections):
             delta = min(delta, (len(x)-1-nonMuteSections[i][1]))
             # making sure we don't add more than 0.5s, since that could spill over into another person's voice
             delta = min(sr//2, delta)  # assuming split was made on 0.5s of silence as minimum
+        else:
+            delta = 0
+        if current_slice_len+2*delta < 2*sr:  # probably random noise, clip is too small even with delta
+            continue
         slice=x[nonMuteSections[i][0]-delta:nonMuteSections[i][1]+delta]
         audio_slices.append([nonMuteSections[i][0]-delta, nonMuteSections[i][1]+delta])
         feature_vector = get_feature_vector(slice, sr)
@@ -98,7 +102,7 @@ def cluster_speakers(model, scaled_features, verbose=1):
     for i in range(len(model_inputs)):
         for j in range(i, len(model_inputs)):
             # getting cosine distance = 1 - cosine similarity (predicted by siamese model)
-            temp_dist = 1 - model.predict([model_inputs[i], model_inputs[j]])[0][0]
+            temp_dist = 1 - model([model_inputs[i], model_inputs[j]])[0][0]
             temp_dist = max(temp_dist, 0)  # keeping everything >=0, sometimes dips below due to rounding errors otherwise
             distance_matrix[i][j] = temp_dist
             distance_matrix[j][i] = temp_dist
@@ -141,7 +145,8 @@ def split_and_cluster(audio_filepath, model_filepath="models/base_siamese_175", 
                 print("{0:.2f}s to {1:.2f}s;".format(timestamps[0], timestamps[1]), end=' ')
             print('\n')
     
-    return scaled_features, audio_slices, clustered_speakers
+    overall_timestamps = [[fr/sr for fr in slice_frames] for slice_frames in audio_slices]
+    return scaled_features, overall_timestamps, clustered_speakers
 
 
 if __name__ == "__main__":
