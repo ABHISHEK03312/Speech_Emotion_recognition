@@ -8,6 +8,8 @@ import tensorflow.keras as keras
 
 from sklearn.cluster import DBSCAN
 
+class ClipTooSmallError(Exception):
+    pass
 
 def get_feature_vector(y, sr):
     feature_vector = []
@@ -69,6 +71,8 @@ def get_audio_features(x, sr, nonMuteSections):
         feature_vector = get_feature_vector(slice, sr)
         audio_features.append(feature_vector)
     
+    if len(audio_features)==0:
+        raise ClipTooSmallError("Clip too small to extract features or insufficient speech length of speakers in clip")
     return audio_features, audio_slices
 
 
@@ -150,5 +154,8 @@ def split_and_cluster(audio_filepath, model_filepath="models/base_siamese_175", 
 
 
 if __name__ == "__main__":
-    audio_filepath = "mixed_data\mixed_clip_15_happy_18_sad_18_disgust_24_fearful.wav"
-    _ = split_and_cluster(audio_filepath)
+    audio_filepath = "WhatsApp-Video-2021-11-13-at-15.51.17.wav"
+    try:
+        _ = split_and_cluster(audio_filepath)
+    except ClipTooSmallError:
+        print("insufficient clip length")
