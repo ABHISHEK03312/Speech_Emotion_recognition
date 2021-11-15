@@ -44,7 +44,7 @@ def get_feature_vector(y, sr):
 def get_audio_split(filepath):
     x, sr=librosa.load(filepath, sr=None)
     # split audio with any audio signal lesser than 20db as mute. Minimum length of silence must be 0.5s
-    nonMuteSections = librosa.effects.split(x, frame_length=sr//2)
+    nonMuteSections = librosa.effects.split(x, frame_length=sr//2, top_db=40)
 
     return x, sr, nonMuteSections
 
