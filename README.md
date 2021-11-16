@@ -20,7 +20,7 @@ python predict.py
 The various experiments, data generation scripts and other functions can be found in the various notebooks. 
 We run the notebooks in the following order if you wish to retrain models or regenerate data. do note that this may take a while to run. Data generation can take upto 45 minutes or more, and model training can take around 30 minutes. 
 
-####The training data and many other data files are not included in the repository owing to large size.
+#### The training data and many other data files are not included in the repository owing to large size.
 
 ```
 Preprocessing.ipynb
